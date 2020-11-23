@@ -1,0 +1,23 @@
+{
+  "name": "Kafka Consumer",
+  "description": "Node client uses websockets to monitor a Kafka Topic",
+  "repository": "https://github.com/heroku-examples/node-websockets",
+  "keywords": ["node", "websocket", "kafka", "consumer"],
+  "env": {
+    "KAFKA_CLIENT_CERT": {
+      "required": true
+    },
+    "KAFKA_CLIENT_CERT_KEY": {
+      "required": true
+    },
+    "KAFKA_TOPIC": {
+      "required":true
+    },
+    "KAFKA_TRUSTED_CERT":{
+      "required":true
+    },
+    "KAFKA_URL":{
+      "required":true
+    }
+  }
+}

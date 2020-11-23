@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+.env
+client.crt
+client.key
+.vscode/
+.DS_Store

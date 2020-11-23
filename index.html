@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="x-ua-compatible" content="ie=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" type="text/css" href="/styles/salesforce-lightning-design-system.css"/>
+		<style>
+			body {
+            background-color: green;
+			}
+		</style>
+		<script type="text/javascript" src="/js/jquery.min.js"></script>
+		<script type="text/javascript" src="/js/handlebars.min.js"></script>
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	</head>
+	<!-- comment -->
+	<body >
+		<div style="width:80%; margin-left:auto; margin-right:auto ">
+		<div class="slds-media slds-align--absolute-center slds-size--1-of-5 slds-p-around--large">
+			<div class="slds-media__figure">
+				<img src="https://s3.amazonaws.com/assets.heroku.com/addons.heroku.com/icons/1581/original.png?1474679816" class="slds-avatar--large" alt="Apache Kafka on Heroku" />
+			</div>
+			<div class="slds-media__body slds-text-heading--large slds-p-top--x-small">
+				<p>Kafka Client Demonstration</p>
+				<div class="slds-text-body--regular">Powered by <a href="https://www.heroku.com" target="_blank">Heroku</a></div>
+			</div>
+		</div>
+
+		<div class="slds-grid slds-wrap">
+			<div class="slds-col slds-size--3-of-4 slds-p-around--small">
+				<div id="kafka-stream" class="slds-text-heading--medium slds-align--absolute-center slds-p-bottom--large">
+					Kafka Stream
+				</div>
+			</div>
+			<div class="slds-col slds-size--1-of-4 slds-p-around--small ">
+				<div class="slds-grid slds-wrap">
+					<div class="slds-col slds-size--1-of-1 slds-p-bottom--large">
+						<span class="slds-text-heading--medium">Set Offset</span>
+					</div>
+					<div class="slds-col slds-size--1-of-1 slds-align--absolute-center">
+						<div class="slds-grid slds-wrap">
+							<div class="slds-col slds-size--1-of-2">
+								<input id="offset-val" class="slds-input" type="text" placeholder="offset" />
+							</div>
+							<div class="slds-col slds-size--1-of-2">
+								<button id="fetchBtn" type="button" class="slds-button slds-m-left--x-small">Set Offset</button>
+							</div>
+							<div class="slds-col slds-size--1-of-2 slds-m-top--medium">
+								<button id="earliestBtn" type="button" class="slds-button slds-button--brand">Earliest</button>
+							</div>
+							<div class="slds-col slds-size--1-of-2 slds-m-top--medium">
+								<button id="latestBtn" type="button" class="slds-button slds-button--brand">Latest</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>			
+		</div>
+		</div>
+		<!--
+			Handlebars template for a kafka stream message
+		-->
+		<script id="message-template" type="text/x-handlebars-template">
+			<div class="slds-grid slds-wrap slds-align--absolute-center slds-size--3-of-4 slds-box slds-m-bottom--small">
+   				<div class="slds-col slds-size--1-of-3">
+					<span class="slds-section-title">Counter</span> : {{count}}
+ 	 			</div> 				
+				  <div class="slds-col slds-size--1-of-3">
+					<!--<span class="slds-section-title">Offset</span> : {{offset}} -->&nbsp;
+ 	 			</div>
+  				<div class="slds-col slds-size--1-of-3">
+					<span class="slds-section-title">Message Size</span> : {{messageSize}}kb
+  				</div>
+				<div class="slds-col slds-size--1-of-8">
+					<h3 class="slds-section-title">Message</h3>
+				</div>
+				<div class="slds-col slds-size--7-of-8 slds-box slds-box--x-small">{{message}}</div>
+			</div>
+		</script>
+
+		<!--
+			Handlebars template for a single fetched message
+		-->
+		<script id="message-template" type="text/x-handlebars-template">
+			<div class="slds-grid slds-wrap slds-align--absolute-center slds-size--1-of-2 slds-box slds-m-bottom--small">
+   				<div class="slds-col slds-size--1-of-3">
+					<span class="slds-section-title">Counter</span> : {{count}}
+ 	 			</div> 				
+				  <div class="slds-col slds-size--1-of-3">
+					<span class="slds-section-title">Offset</span> : {{offset}}
+ 	 			</div>
+  				<div class="slds-col slds-size--1-of-3">
+					<span class="slds-section-title">Message Size</span> : {{messageSize}}kb
+  				</div>
+				<div class="slds-col slds-size--1-of-8">
+					<h3 class="slds-section-title">Message</h3>
+				</div>
+				<div class="slds-col slds-size--7-of-8 slds-box slds-box--x-small">{{message}}</div>
+			</div>
+		</script>
+
+		<script>
+			var templateSrc = $("#message-template").html();
+			var template = Handlebars.compile(templateSrc);
+			var messageCounter = 1;
+			
+			var socket = io();
+			var el = document.getElementById('kafka-stream');
+
+			socket.on('message', function(event) {
+				//console.log('['+JSON.stringify(event)+']');
+				var packet = JSON.parse(event);
+				packet.message = JSON.stringify(packet.data);
+				packet.count = messageCounter++;
+				var node = template(packet);
+				$(node).insertAfter('#kafka-stream');
+			});
+
+			$("#fetchBtn").click(function() {
+				var postData = {};
+				postData.offset = $("#offset-val").val();
+				console.log('PostData ['+JSON.stringify(postData)+']');
+
+				$.ajax({
+  					url:'/fetch',
+  					type:"POST",
+  					data:JSON.stringify(postData),
+  					contentType:"application/json; charset=utf-8",
+  					dataType:"json",
+  					success: function(returnData){
+						cleanScreen();
+						console.log('we have data from fetch '+JSON.stringify(returnData));
+  					}
+				});
+
+			});
+			$("#earliestBtn").click(function() {
+				$.post('/earliest').done(function(returnData) {
+					cleanScreen();
+					console.log('we have returned from earliest set call '+JSON.stringify(returnData));
+				});
+			})
+			$("#latestBtn").click(function(){
+				$.post('/latest').done(function(returnData) {
+					cleanScreen();
+					console.log('we have returned from latest set call' + JSON.stringify(returnData));
+				})
+			});
+			function cleanScreen() {
+				$( "#kafka-stream" ).nextAll().remove().animate({
+    				opacity: 0.25,
+    				left: "+=50",
+    				height: "toggle"
+  					}, 5000, function() {
+    					// Animation complete.
+  					});
+			}
+		</script>
+	</body>
+</html>
