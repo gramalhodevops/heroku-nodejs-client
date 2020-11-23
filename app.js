@@ -76,8 +76,12 @@ var brokerUrls = process.env.KAFKA_URL.replace(/\+ssl/g,'');
 var consumer = new Kafka.SimpleConsumer({
   connectionString: brokerUrls,
   ssl: {
-    cert: process.env.KAFKA_TRUSTED_CERT,//fs.readFileSync("/Users/gramalho/Downloads/certificate/kafka.crt").toString(),
-    key: process.env.KAFKA_CLIENT_CERT_KEY//fs.readFileSync("/Users/gramalho/Downloads/certificate/kafka.key").toString(),
+    //cert: process.env.KAFKA_TRUSTED_CERT,//fs.readFileSync("/Users/gramalho/Downloads/certificate/kafka.crt").toString(),
+    //key: process.env.KAFKA_CLIENT_CERT_KEY//fs.readFileSync("/Users/gramalho/Downloads/certificate/kafka.key").toString(),
+    cert: process.env.KAFKA_CLIENT_CERT,
+    key: process.env.KAFKA_CLIENT_CERT_KEY,
+    // secureProtocol: 'TLSv1_method',
+    rejectUnauthorized: false
   }
 });
 /*///////////////////////////////
