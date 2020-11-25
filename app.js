@@ -175,7 +175,7 @@ var dataHandler = function(messageSet, topic, partition) {
     emit to all clients when a kafka message is received
 */
 consumer.init().then(function() {
-  return consumer.subscribe('inventive_connector_78318.sfbradb2b.opportunity', dataHandler);
+  return consumer.subscribe('ambitious_connector_99693.sfbradb2b.opportunity', dataHandler);
 });
 
 /*
