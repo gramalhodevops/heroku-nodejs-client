@@ -112,11 +112,7 @@ var dataHandler = function(messageSet, topic, partition) {
   
                         dataPostgres.forEach(row => {
                                                         OpEvent[rescdata[i].Org].set('Amount__c', row.amount);
-                                                        //Formatting date from KAFKA
-                                                        var d1 = (((row.closeDate*60)*60)*24)*1000;
-                                                        var d = new Date(d1);
-                                                        var timeStampCon = d.getDate() + '/' + (d.getMonth()) + '/' + d.getFullYear();
-                                                        OpEvent[rescdata[i].Org].set('CloseDate__c', timeStampCon);
+                                                        OpEvent[rescdata[i].Org].set('CloseDate__c', row.closedate);
                                                         OpEvent[rescdata[i].Org].set('Customer_Code__c', row.account_number__c);
                                                         OpEvent[rescdata[i].Org].set('Description__c', row.description);
                                                         OpEvent[rescdata[i].Org].set('Event_Type__c', obj.payload.op);
