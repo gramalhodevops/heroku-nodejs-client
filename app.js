@@ -181,7 +181,7 @@ const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Sta
     var kafkaTopics = '';
     for (var i = 0; i < kafkaData.length; ++i) {
 
-        if  (kafkaTopics == '')
+        /*if  (kafkaTopics == '')
         {
             kafkaTopics = kafkaData[i].Kafka_Topic;
         }
@@ -191,11 +191,12 @@ const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Sta
         }
             console.log('>>>>> Kafka topics : ' + kafkaTopics);
 
-    }
+    */
             consumer.init().then(function() {
                 //return consumer.subscribe([kafkaTopics], dataHandler);
-                return consumer.subscribe('discreet_connector_50416.sfbradcartoes.opportunity; discreet_connector_50416.sfbradseguros.opportunity', dataHandler);    
+                return consumer.subscribe(kafkaData[i].Kafka_Topic, dataHandler);    
             });
+            }
         });
 
 /*
