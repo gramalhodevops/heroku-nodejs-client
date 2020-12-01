@@ -50,7 +50,7 @@ client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'
         autoRefresh: true // <--- set this to true
         });
 
-        console.log('Create Connection ' +[row.Org]+ ':' + Org[row.Org])
+        console.log('Create Connection ' +[row.Org]+ ':' + JSON.stringify(Org[row.Org]));
 
         // Defining Endpoint
         OpEvent[row.Org]  = nforce.createSObject(row.EventObj);
@@ -58,6 +58,7 @@ client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'
         // Autenticating
         Org[row.Org].authenticate({ username: row.username, password: row.password}, function(err, resp){
             if (err) throw err;
+            console.log('Connection Response' +[row.Org]+ ':' + resp);
             }); 
         })
         });
