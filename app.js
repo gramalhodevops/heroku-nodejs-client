@@ -110,13 +110,24 @@ var dataHandler = function(messageSet, topic, partition) {
                 try {
                         const dataRawPostgres = await client.query('SELECT * from '+  obj.payload.source.schema + '.' +  '\"' + obj.payload.source.table + '\" where \"sfid\" = \'' + obj.payload.after.sfid + '\'');
                         const dataPostgres = dataRawPostgres.rows;
+                        const sOperation = '';
+
+                        if(obj.payload.op == 'c'){
+
+                            sOperation = 'CREATE';
+
+                        }
+                        else {
+
+                            sOperation = 'UPDATE';
+                        }
   
                         dataPostgres.forEach(row => {
                                                         OpEvent[rescdata[i].Org].set('Amount__c', row.amount);
                                                         OpEvent[rescdata[i].Org].set('CloseDate__c', row.closedate);
                                                         OpEvent[rescdata[i].Org].set('Customer_Code__c', row.account_number__c);
                                                         OpEvent[rescdata[i].Org].set('Description__c', row.description);
-                                                        OpEvent[rescdata[i].Org].set('Event_Type__c', obj.payload.op);
+                                                        OpEvent[rescdata[i].Org].set('Event_Type__c', sOperation);
                                                         OpEvent[rescdata[i].Org].set('Name__c', row.name);
                                                         OpEvent[rescdata[i].Org].set('OriginEventOrg__c', obj.payload.source.schema);
                                                         OpEvent[rescdata[i].Org].set('Product_1__c', row.products__c);
