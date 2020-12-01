@@ -136,6 +136,7 @@ var dataHandler = function(messageSet, topic, partition) {
                                                         OpEvent[rescdata[i].Org].set('Type__c', row.type);
                                                         OpEvent[rescdata[i].Org].set('OriginCreatedByName__c', row.created_by_name__c);
                                                         OpEvent[rescdata[i].Org].set('OriginUpdByName__c', row.updated_by_name__c);
+                                                        OpEvent[rescdata[i].Org].set('Source_RecordId__c', row.source_id__c);
                                                         OpEvent[rescdata[i].Org].set('Payload__c', JSON.stringify(obj.payload));
                                                         destORg = rescdata[i].Org;
 
