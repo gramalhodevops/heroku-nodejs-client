@@ -193,7 +193,7 @@ const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Sta
 
     }
             consumer.init().then(function() {
-                return consumer.subscribe(kafkaTopics, dataHandler);
+                return consumer.subscribe([kafkaTopics], dataHandler);
                 });
         });
 
