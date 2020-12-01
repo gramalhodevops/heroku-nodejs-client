@@ -110,7 +110,7 @@ var dataHandler = function(messageSet, topic, partition) {
                 try {
                         const dataRawPostgres = await client.query('SELECT * from '+  obj.payload.source.schema + '.' +  '\"' + obj.payload.source.table + '\" where \"sfid\" = \'' + obj.payload.after.sfid + '\'');
                         const dataPostgres = dataRawPostgres.rows;
-                        const sOperation = '';
+                        var sOperation = '';
 
                         if(obj.payload.op == 'c'){
 
