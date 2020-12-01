@@ -194,7 +194,7 @@ const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Sta
     */
             kafkaTopic = kafkaData[i].Kafka_Topic;
             console.log('>>>>> Kafka topic : ' + kafkaTopic);
-            consumer.init().then(function() {
+            const kafkaSub = await consumer.init().then(function() {
                 //return consumer.subscribe([kafkaTopics], dataHandler);
                 return consumer.subscribe(kafkaTopic, dataHandler);    
             });
