@@ -178,8 +178,8 @@ var dataHandler = function(messageSet, topic, partition) {
 const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Status\" = \'Ativo\'', async (err, res) => {
     if (err) throw err;
     const kafkaData = res.rows;
-    var kafkaTopics = '';
-    for (var i = 0; i < kafkaData.length; ++i) {
+    var kafkaTopic = '';
+    for (var i = 0; i < kafkaData.length; ++i) {5555554
 
         /*if  (kafkaTopics == '')
         {
@@ -192,9 +192,11 @@ const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Sta
             console.log('>>>>> Kafka topics : ' + kafkaTopics);
 
     */
+            kafkaTopic = kafkaData[i].Kafka_Topic
+            console.log('>>>>> Kafka topic : ' + kafkaTopic);
             consumer.init().then(function() {
                 //return consumer.subscribe([kafkaTopics], dataHandler);
-                return consumer.subscribe(kafkaData[i].Kafka_Topic, dataHandler);    
+                return consumer.subscribe(kafkaTopic, dataHandler);    
             });
             }
         });
