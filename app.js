@@ -58,7 +58,7 @@ client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'
         // Autenticating
         Org[row.Org].authenticate({ username: row.username, password: row.password}, function(err, resp){
             if (err) throw err;
-            console.log('Connection Response' +[row.Org]+ ': ' + resp);
+            console.log('Connection Response ' +[row.Org]+ ': ' + JSON.stringify(resp));
             }); 
         })
         });
@@ -106,7 +106,7 @@ var dataHandler = function(messageSet, topic, partition) {
 
         for (var i = 0; i < rescdata.length; ++i) {
 
-            if (rescdata[i].Schema != obj.payload.source.schema){
+            if (rescdata[i].Schema != obj.payload.source.schema && obj.payload.after.updated_by_name__c != 'Automated Process'){
                 try {
                         const dataRawPostgres = await client.query('SELECT * from '+  obj.payload.source.schema + '.' +  '\"' + obj.payload.source.table + '\" where \"sfid\" = \'' + obj.payload.after.sfid + '\'');
                         const dataPostgres = dataRawPostgres.rows;
@@ -123,6 +123,8 @@ var dataHandler = function(messageSet, topic, partition) {
                                                         OpEvent[rescdata[i].Org].set('Salesforce_Origin_Id__c', row.sfid); 
                                                         OpEvent[rescdata[i].Org].set('Stage__c', row.stagename);
                                                         OpEvent[rescdata[i].Org].set('Type__c', row.type);
+                                                        OpEvent[rescdata[i].Org].set('OriginCreatedByName__c', row.created_by_name__c);
+                                                        OpEvent[rescdata[i].Org].set('OriginUpdByName__c', row.updated_by_name__c);
                                                         OpEvent[rescdata[i].Org].set('Payload__c', JSON.stringify(obj.payload));
                                                         destORg = rescdata[i].Org;
 
