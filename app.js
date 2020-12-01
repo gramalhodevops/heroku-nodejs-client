@@ -172,11 +172,30 @@ var dataHandler = function(messageSet, topic, partition) {
 }
 
 /*
-    emit to all clients when a kafka message is received
+    Subscribing to all kafka topics - Opportunitty/Lead/Chatter Feed
 */
-consumer.init().then(function() {
-  return consumer.subscribe('ambitious_connector_99693.sfbradb2b.opportunity', dataHandler);
-});
+// Query to identify the topics that should be subscribed
+const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Status\" = \'Ativo\'', async (err, res) => {
+    if (err) throw err;
+    const kafkaData = res.rows;
+    var kafkaTopics = '';
+    for (var i = 0; i < kafkaData.length; ++i) {
+
+        if  (kafkaTopics == '')
+        {
+            kafkaTopics = kafkaData[i].Kafka_Topic;
+        }
+        else
+        {
+            kafkaTopics = kafkaTopics + ',' + kafkaData[i].Kafka_Topic;
+        }
+            console.log('>>>>> Kafka topics : ' + kafkaTopics);
+
+    }
+            consumer.init().then(function() {
+                return consumer.subscribe(kafkaTopics, dataHandler);
+                });
+        });
 
 /*
     Webserver setup
