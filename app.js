@@ -179,7 +179,7 @@ const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Sta
     if (err) throw err;
     const kafkaData = res.rows;
     var kafkaTopic = '';
-    for (var i = 0; i < kafkaData.length; ++i) {5555554
+    for (var i = 0; i < kafkaData.length; ++i) {
 
         /*if  (kafkaTopics == '')
         {
@@ -192,7 +192,7 @@ const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Sta
             console.log('>>>>> Kafka topics : ' + kafkaTopics);
 
     */
-            kafkaTopic = kafkaData[i].Kafka_Topic
+            kafkaTopic = kafkaData[i].Kafka_Topic;
             console.log('>>>>> Kafka topic : ' + kafkaTopic);
             consumer.init().then(function() {
                 //return consumer.subscribe([kafkaTopics], dataHandler);
