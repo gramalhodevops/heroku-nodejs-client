@@ -181,21 +181,9 @@ const kafkaQuery = client.query('SELECT * from public.\"ConfigData\" where \"Sta
     var kafkaTopic = '';
     for (var i = 0; i < kafkaData.length; ++i) {
 
-        /*if  (kafkaTopics == '')
-        {
-            kafkaTopics = kafkaData[i].Kafka_Topic;
-        }
-        else
-        {
-            kafkaTopics = kafkaTopics + ',' + kafkaData[i].Kafka_Topic;
-        }
-            console.log('>>>>> Kafka topics : ' + kafkaTopics);
-
-    */
             kafkaTopic = kafkaData[i].Kafka_Topic;
             console.log('>>>>> Kafka topic : ' + kafkaTopic);
             const kafkaSub = await consumer.init().then(function() {
-                //return consumer.subscribe([kafkaTopics], dataHandler);
                 return consumer.subscribe(kafkaTopic, dataHandler);    
             });
             }
