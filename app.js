@@ -174,7 +174,7 @@ var dataHandler = function(messageSet, topic, partition) {
         var destORg = '';
         var varProds = obj.payload.after.product_interest__c
         //var inClause = '\'' + varProds.split(',').join('\',\'') + '\'';
-        const res1 = client.query('SELECT * from public.\"ConfigData\" where \"Produto\" in (' +varProds+ ') and \"Status\" = \'Ativo\'', async (err, res) => {
+        const res1 = client.query('SELECT * from public.\"ConfigData\" where \"Produto\" = \'' +varProds+ '\' and \"Status\" = \'Ativo\'', async (err, res) => {
         if (err) throw err;
         const rescdata = res.rows;
 
