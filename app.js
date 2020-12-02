@@ -35,6 +35,7 @@ const client = new Client({
 // Query on ConfigSFConnections Table
 var Org = [];
 var OpEvent = [];
+var LeadEvent = [];
 client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'Ativo\' ', (err, res) => {
     if (err) throw err;
     //for (let row of res.rows) {
