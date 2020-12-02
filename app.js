@@ -55,7 +55,7 @@ client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'
 
         // Defining Endpoint
         OpEvent[row.Org]  = nforce.createSObject(row.EventObj);
-        LeadEvent[row.Org]  = nforce.createSObject(row.EventObj2);
+        LeadEvent[row.Org]  = nforce.createSObject(row.EventObj1);
         //ChatterEvent[row.Org]  = nforce.createSObject(row.EventObj3);
 
         // Autenticating
