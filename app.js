@@ -54,6 +54,8 @@ client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'
 
         // Defining Endpoint
         OpEvent[row.Org]  = nforce.createSObject(row.EventObj);
+        LeadEvent[row.Org]  = nforce.createSObject(row.EventObj2);
+        //ChatterEvent[row.Org]  = nforce.createSObject(row.EventObj3);
 
         // Autenticating
         Org[row.Org].authenticate({ username: row.username, password: row.password}, function(err, resp){
@@ -97,6 +99,10 @@ var dataHandler = function(messageSet, topic, partition) {
 
         //Query on ConfigData based on Products
         var obj = JSON.parse(m.message.value);
+
+        // Treating Kakfa Messages for Opportunity
+        if(obj.payload.source.table == 'opportunity') {
+
         var destORg = '';
         var varProds = obj.payload.after.products__c.replace(/;/g, ',');
         var inClause = '\'' + varProds.split(',').join('\',\'') + '\'';
@@ -160,22 +166,76 @@ var dataHandler = function(messageSet, topic, partition) {
         }
         }
         });
+    } // Treating Kakfa Messages for Lead
+    else if (obj.payload.source.table == 'lead')
+    {
+
+        var destORg = '';
+        var varProds = obj.payload.after.product_interest__c
+        //var inClause = '\'' + varProds.split(',').join('\',\'') + '\'';
+        const res1 = client.query('SELECT * from public.\"ConfigData\" where \"Produto\" in (' +varProds+ ') and \"Status\" = \'Ativo\'', async (err, res) => {
+        if (err) throw err;
+        const rescdata = res.rows;+
+
+        for (var i = 0; i < rescdata.length; ++i) {
+
+            if (rescdata[i].Schema != obj.payload.source.schema && obj.payload.after.updated_by_name__c != 'Automated Process' && obj.payload.op == 'c'){
+                try {
+                        const dataRawPostgres = await client.query('SELECT * from '+  obj.payload.source.schema + '.' +  '\"' + obj.payload.source.table + '\" where \"sfid\" = \'' + obj.payload.after.sfid + '\'');
+                        const dataPostgres = dataRawPostgres.rows;
+                        var sOperation = '';
+
+                        dataPostgres.forEach(row => {
+                                                        LeadEvent[rescdata[i].Org].set('City__c',  row.city);
+                                                        LeadEvent[rescdata[i].Org].set('Company__c', row.company);
+                                                        LeadEvent[rescdata[i].Org].set('Description__c', row.description);
+                                                        LeadEvent[rescdata[i].Org].set('Email__c', row.email);
+                                                        LeadEvent[rescdata[i].Org].set('Fax__c', row.fax);
+                                                        LeadEvent[rescdata[i].Org].set('FirstName__c', row.firstname);
+                                                        LeadEvent[rescdata[i].Org].set('LastName__c', row.lastname);
+                                                        LeadEvent[rescdata[i].Org].set('NumberOfEmployees__c', row.numberofemployes);
+                                                        //LeadEvent[rescdata[i].Org].set('OriginCreatedByName__c',
+                                                        LeadEvent[rescdata[i].Org].set('OriginEventOrg__c', obj.payload.source.schema);
+                                                        LeadEvent[rescdata[i].Org].set('Phone__c', row.phone);
+                                                        LeadEvent[rescdata[i].Org].set('Postal_Code__c', row.postal_code);
+                                                        LeadEvent[rescdata[i].Org].set('Product_Interest__c', row.product_interest__c);
+                                                        LeadEvent[rescdata[i].Org].set('Salesforce_Origin_Id__c', row.source_id__c);
+                                                        LeadEvent[rescdata[i].Org].set('Payload__c', JSON.stringify(obj.payload));
+                                                        destORg = rescdata[i].Org;
+
+                                                        console.log('<<<<<<<< ATTEMPT TO PUBLISH SALEFORCE EVENT >>>>>>> ' +i);
+                                                        console.log('<<<<<<<<<<<<<<<< EVENT DATE: '+new Date());
+                                                        console.log('<<<<<<<< Source ORG: ' + obj.payload.source.schema);
+                                                        console.log('<<<<<<<< Object: ' + obj.payload.source.table);
+                                                        console.log('<<<<<<<< Destination ORG: ' + destORg);
+                                                        console.log('<<<<<<<< Check Salesforce Org Call Response >>>>>>>');
+
+                                                        Org[rescdata[i].Org].insert({ sobject: LeadEvent[rescdata[i].Org], oauth: Org[rescdata[i].Org].oauth }, function(err, resp){
+                                                                if (err) throw err; 
+                                                                console.log('<<<<<<<< Salesforce Org Call Response : '+JSON.stringify(resp));
+
+                                                        });
+
+                                                     });
+                    } catch (err) {
+                        console.error(err);
+                        throw err;
+                    }
+        }
+        }
+        });
+
+    }
 
         // KAFKA LOG EVENTS
         console.log('<<<<<<<<<<<<<<<< EVENT RECEIVED >>>>>>>>>>>>>>>>');
         console.log('<<<<<<<<<<<<<<<< SOURCE: '+obj.payload.source.schema);
+        console.log('<<<<<<<<<<<<<<<< OBJECT: '+obj.payload.source.table);
         console.log('<<<<<<<<<<<<<<<< TX ID: '+obj.payload.source.txId);
         console.log('<<<<<<<<<<<<<<<< OPERATION: '+obj.payload.op);
         console.log('<<<<<<<<<<<<<<<< OFFSET: '+m.offset);new Date();
         console.log('<<<<<<<<<<<<<<<< EVENT DATE: '+new Date());
         console.log('<<<<<<<<<<<<<<<< PAYLOAD >>>>>>>>>>>>>>>>');
-        console.log('AccountId: '+obj.payload.after.accountid);
-        console.log('Opportunity Name: '+obj.payload.after.name);
-        console.log('Revenue: '+obj.payload.after.expectedrevenue);
-        console.log('Stage Name: '+obj.payload.after.stagename);
-        console.log('Products: '+varProds);
-        console.log('SF ID: '+obj.payload.after.sfid);
-        console.log('<<<<<<<<<<<<<<<< Full Payload Kafka >>>>>>>>>>');
         console.log(obj.payload);
         console.log('<<<<<<<<<<<<<<<< END OF EVENT >>>>>>>>>>>>>>>>');
         var packet = {};
