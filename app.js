@@ -192,6 +192,7 @@ var dataHandler = function(messageSet, topic, partition) {
 
                         dataPostgres.forEach(row => {
                                                         LeadEvent[rescdata[i].Org].set('City__c',  row.city);
+                                                        LeadEvent[rescdata[i].Org].set('AnnualRevenue__c', row.annualrevenue);
                                                         LeadEvent[rescdata[i].Org].set('Company__c', row.company);
                                                         LeadEvent[rescdata[i].Org].set('Description__c', row.description);
                                                         LeadEvent[rescdata[i].Org].set('Email__c', row.email);
@@ -202,13 +203,16 @@ var dataHandler = function(messageSet, topic, partition) {
                                                         LeadEvent[rescdata[i].Org].set('OriginCreatedByName__c', row.created_by_name__c);
                                                         LeadEvent[rescdata[i].Org].set('OriginEventOrg__c', obj.payload.source.schema);
                                                         LeadEvent[rescdata[i].Org].set('Phone__c', row.phone);
+                                                        LeadEvent[rescdata[i].Org].set('Title__c', row.title);
+                                                        LeadEvent[rescdata[i].Org].set('Salutation__c', row.salutation);
+                                                        LeadEvent[rescdata[i].Org].set('Website__c', row.website);
                                                         LeadEvent[rescdata[i].Org].set('Postal_Code__c', row.postal_code);
                                                         LeadEvent[rescdata[i].Org].set('Product_Interest__c', row.product_interest__c);
-                                                        LeadEvent[rescdata[i].Org].set('Salesforce_Origin_Id__c', row.source_id__c);
+                                                        LeadEvent[rescdata[i].Org].set('Salesforce_Origin_Id__c', row.sfid);
                                                         LeadEvent[rescdata[i].Org].set('Payload__c', JSON.stringify(obj.payload));
                                                         destORg = rescdata[i].Org;
 
-                                                        console.log('<<<<<<<< ATTEMPT TO PUBLISH SALEFORCE EVENT >>>>>>> ' +i);
+                                                        console.log('<<<<<<<< ATTEMPT TO PUBLISH SALEFORCE EVENT >>>>>>> ');
                                                         console.log('<<<<<<<<<<<<<<<< EVENT DATE: '+new Date());
                                                         console.log('<<<<<<<< Source ORG: ' + obj.payload.source.schema);
                                                         console.log('<<<<<<<< Object: ' + obj.payload.source.table);
