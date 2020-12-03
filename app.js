@@ -107,7 +107,7 @@ var dataHandler = function(messageSet, topic, partition) {
         var destORg = '';
         var varProds = obj.payload.after.products__c.replace(/;/g, ',');
         var inClause = '\'' + varProds.split(',').join('\',\'') + '\'';
-        const res1 = client.query('SELECT * from public.\"ConfigData\" where \"Produto\" in (' +inClause+ ') and \"Status\" = \'Ativo\'', async (err, res) => {
+        const res1 = client.query('SELECT * from public.\"ConfigData\" where \"Produto\" in (' +inClause+ ') and \"Status\" = \'Ativo\' and \"Objeto\" = \'Opportunity\'', async (err, res) => {
         if (err) throw err;
         const rescdata = res.rows;
 
@@ -174,7 +174,7 @@ var dataHandler = function(messageSet, topic, partition) {
         var destORg = '';
         var varProds = obj.payload.after.product_interest__c
         //var inClause = '\'' + varProds.split(',').join('\',\'') + '\'';
-        const res1 = client.query('SELECT * from public.\"ConfigData\" where \"Produto\" = \'' +varProds+ '\' and \"Status\" = \'Ativo\'', async (err, res) => {
+        const res1 = client.query('SELECT * from public.\"ConfigData\" where \"Produto\" = \'' +varProds+ '\' and \"Status\" = \'Ativo\' and \"Objeto\" = \'Lead\'', async (err, res) => {
         if (err) throw err;
         const rescdata = res.rows;
 
@@ -185,6 +185,10 @@ var dataHandler = function(messageSet, topic, partition) {
                         const dataRawPostgres = await client.query('SELECT * from '+  obj.payload.source.schema + '.' +  '\"' + obj.payload.source.table + '\" where \"sfid\" = \'' + obj.payload.after.sfid + '\'');
                         const dataPostgres = dataRawPostgres.rows;
                         var sOperation = '';
+
+                        if(obj.payload.op == 'c'){
+
+                            sOperation = 'CREATE';
 
                         dataPostgres.forEach(row => {
                                                         LeadEvent[rescdata[i].Org].set('City__c',  row.city);
@@ -218,6 +222,7 @@ var dataHandler = function(messageSet, topic, partition) {
                                                         });
 
                                                      });
+                                                    }
                     } catch (err) {
                         console.error(err);
                         throw err;
