@@ -195,7 +195,7 @@ var dataHandler = function(messageSet, topic, partition) {
                                                         LeadEvent[rescdata[i].Org].set('FirstName__c', row.firstname);
                                                         LeadEvent[rescdata[i].Org].set('LastName__c', row.lastname);
                                                         LeadEvent[rescdata[i].Org].set('NumberOfEmployees__c', row.numberofemployes);
-                                                        //LeadEvent[rescdata[i].Org].set('OriginCreatedByName__c',
+                                                        LeadEvent[rescdata[i].Org].set('OriginCreatedByName__c', row.created_by_name__c);
                                                         LeadEvent[rescdata[i].Org].set('OriginEventOrg__c', obj.payload.source.schema);
                                                         LeadEvent[rescdata[i].Org].set('Phone__c', row.phone);
                                                         LeadEvent[rescdata[i].Org].set('Postal_Code__c', row.postal_code);
