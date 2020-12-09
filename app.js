@@ -119,7 +119,7 @@ var dataHandler = function(messageSet, topic, partition) {
                         const dataPostgres = dataRawPostgres.rows;
                         var sOperation = '';
 
-                        if(obj.payload.op == 'c' && row.created_by_name__c != 'Automated Process'){
+                        if(obj.payload.op == 'c' && obj.payload.after.created_by_name__c != 'Automated Process'){
 
                             sOperation = 'CREATE';
 
