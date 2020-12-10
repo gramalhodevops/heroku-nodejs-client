@@ -36,6 +36,7 @@ const client = new Client({
 var Org = [];
 var OpEvent = [];
 var LeadEvent = [];
+var OpFeedEvent = []
 client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'Ativo\' ', (err, res) => {
     if (err) throw err;
     //for (let row of res.rows) {
@@ -45,7 +46,7 @@ client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'
         //Definin Org Details
         Org[row.Org]  = nforce.createConnection({
         clientId: row.clientId,
-        clientSecret: row.clientSecret,
+        clientSecret: row.clientSecret,s
         redirectUri: row.redirectUri,
         mode: row.mode,// optional, 'single' or 'multi' user mode, multi default
         autoRefresh: true // <--- set this to true
@@ -56,7 +57,7 @@ client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'
         // Defining Endpoint
         OpEvent[row.Org]  = nforce.createSObject(row.EventObj);
         LeadEvent[row.Org]  = nforce.createSObject(row.EventObj1);
-        //ChatterEvent[row.Org]  = nforce.createSObject(row.EventObj3);
+        OpFeedEvent[row.Org]  = nforce.createSObject(row.EventObj2);
 
         // Autenticating
         Org[row.Org].authenticate({ username: row.username, password: row.password}, function(err, resp){
@@ -101,8 +102,8 @@ var dataHandler = function(messageSet, topic, partition) {
         //Query on ConfigData based on Products
         var obj = JSON.parse(m.message.value);
 
-        // Treating Kakfa Messages for Opportunity
-        if(obj.payload.source.table == 'opportunity') {
+      // Treating Kakfa Messages for Opportunity
+    if(obj.payload.source.table == 'opportunity') {
 
         var destORg = '';
         var varProds = obj.payload.after.products__c.replace(/;/g, ',');
@@ -235,6 +236,69 @@ var dataHandler = function(messageSet, topic, partition) {
         }
         });
 
+    } // Treating Kakfa Messages for OpportunityFeed
+    else if (obj.payload.source.table == 'opportunityfeed')
+    {
+        var destORg = '';
+        var varProds = obj.payload.after.products__c.replace(/;/g, ',');
+        var inClause = '\'' + varProds.split(',').join('\',\'') + '\'';
+        const res1 = client.query('SELECT * from public.\"ConfigData\" where \"Produto\" in (' +inClause+ ') and \"Status\" = \'Ativo\' and \"Objeto\" = \'OpportunityFeed\'', async (err, res) => {
+        if (err) throw err;
+        const rescdata = res.rows;
+
+        for (var i = 0; i < rescdata.length; ++i) {
+
+            if (rescdata[i].Schema != obj.payload.source.schema && obj.payload.after.updated_by_name__c != 'Automated Process'){
+                try {
+                        const dataRawPostgres = await client.query('SELECT * from '+  obj.payload.source.schema + '.' +  '\"' + obj.payload.source.table + '\" where \"sfid\" = \'' + obj.payload.after.sfid + '\'');
+                        const dataPostgres = dataRawPostgres.rows;
+                        var sOperation = '';
+
+                        if(obj.payload.op == 'c' && obj.payload.after.created_by_name__c != 'Automated Process'){
+
+                            sOperation = 'CREATE';
+
+                      
+  
+                        dataPostgres.forEach(row => {
+                                                        OpEvent[rescdata[i].Org].set('Amount__c', row.amount);
+                                                        OpEvent[rescdata[i].Org].set('CloseDate__c', row.closedate);
+                                                        OpEvent[rescdata[i].Org].set('Customer_Code__c', row.account_number__c);
+                                                        OpEvent[rescdata[i].Org].set('Description__c', row.description);
+                                                        OpEvent[rescdata[i].Org].set('Event_Type__c', sOperation);
+                                                        OpEvent[rescdata[i].Org].set('Name__c', row.name);
+                                                        OpEvent[rescdata[i].Org].set('OriginEventOrg__c', obj.payload.source.schema);
+                                                        OpEvent[rescdata[i].Org].set('Product_1__c', row.products__c);
+                                                        OpEvent[rescdata[i].Org].set('Salesforce_Origin_Id__c', row.sfid); 
+                                                        OpEvent[rescdata[i].Org].set('Stage__c', row.stagename);
+                                                        OpEvent[rescdata[i].Org].set('Type__c', row.type);
+                                                        OpEvent[rescdata[i].Org].set('OriginCreatedByName__c', row.created_by_name__c);
+                                                        OpEvent[rescdata[i].Org].set('OriginUpdByName__c', row.updated_by_name__c);
+                                                        OpEvent[rescdata[i].Org].set('Source_RecordId__c', row.source_id__c);
+                                                        OpEvent[rescdata[i].Org].set('Payload__c', JSON.stringify(obj.payload));
+                                                        destORg = rescdata[i].Org;
+
+                                                        console.log('<<<<<<<< ATTEMPT TO PUBLISH SALEFORCE EVENT >>>>>>> ' +i);
+                                                        console.log('<<<<<<<<<<<<<<<< EVENT DATE: '+new Date());
+                                                        console.log('<<<<<<<< Source ORG: ' + obj.payload.source.schema);
+                                                        console.log('<<<<<<<< Destination ORG: ' + destORg);
+                                                        console.log('<<<<<<<< Check Salesforce Org Call Response >>>>>>>');
+
+                                                        Org[rescdata[i].Org].insert({ sobject: OpFeedEvent[rescdata[i].Org], oauth: Org[rescdata[i].Org].oauth }, function(err, resp){
+                                                                if (err) throw err; 
+                                                                console.log('<<<<<<<< Salesforce Org Call Response : '+JSON.stringify(resp));
+
+                                                        });
+
+                                                     });
+                                                    }
+                    } catch (err) {
+                        console.error(err);
+                        throw err;
+                    }
+                }
+        }
+        });
     }
 
         // KAFKA LOG EVENTS
