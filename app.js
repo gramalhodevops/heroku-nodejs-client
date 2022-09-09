@@ -46,7 +46,7 @@ client.query('SELECT * from public.\"ConfigSFConnections\" where \"Status\" = \'
         //Definin Org Details
         Org[row.Org]  = nforce.createConnection({
         clientId: row.clientId,
-        clientSecret: row.clientSecret,s
+        clientSecret: row.clientSecret,
         redirectUri: row.redirectUri,
         mode: row.mode,// optional, 'single' or 'multi' user mode, multi default
         autoRefresh: true // <--- set this to true
